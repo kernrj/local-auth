@@ -1,0 +1,76 @@
+# Default Authentik configuration
+# This file provides defaults that can be overridden by environment variables
+
+# PostgreSQL Database
+postgresql:
+  host: postgresql
+  name: authentik
+  user: authentik
+  port: 5432
+
+# Redis Cache
+redis:
+  host: redis
+  port: 6379
+  cache_db: 0
+  message_queue_db: 1
+  ws_db: 2
+
+# Error Reporting
+error_reporting:
+  enabled: false
+  environment: "production"
+  send_pii: false
+
+# Email settings (can be configured later)
+email:
+  host: ""
+  port: 587
+  username: ""
+  password: ""
+  use_tls: true
+  use_ssl: false
+  timeout: 30
+  from: "authentik@local.auth"
+
+# GeoIP settings
+geoip: "/geoip/GeoLite2-City.mmdb"
+
+# Outposts
+outposts:
+  docker_image_base: "ghcr.io/goauthentik/%(type)s:%(version)s"
+  discover: true
+
+# Logging
+log_level: info
+
+# Footer links
+footer_links:
+  - name: Documentation
+    href: https://goauthentik.io/docs/
+  - name: Local Auth Docs
+    href: /docs/
+
+# Default flows
+default_user_change_name: true
+default_user_change_email: true
+default_user_change_username: true
+
+# Avatar settings
+avatars: "gravatar"
+
+# LDAP settings for default source
+ldap:
+  task_timeout_hours: 2
+  page_size: 50
+
+# Security settings
+impersonation: true
+
+# Session settings
+session_cookie_samesite: "lax"
+
+# Branding
+branding_title: "Local Auth System"
+branding_logo: "/static/dist/assets/icons/icon_left_brand.svg"
+branding_favicon: "/static/dist/assets/icons/icon.png"

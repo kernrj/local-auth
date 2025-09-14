@@ -1,0 +1,48 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Configuration
+config/
+!config/.gitkeep
+
+# Data directories
+media/
+geoip/
+custom-templates/
+ldap_data/
+postgres_data/
+radius_data/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+*.sql
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Docker volumes
+volumes/
+
+# Test directories
+test-config/
+test-*/

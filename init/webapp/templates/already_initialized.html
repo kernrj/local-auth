@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Auth System - Already Initialized</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .icon::after {
+            content: '✓';
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .links {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .link-group {
+            margin-bottom: 15px;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+            margin: 5px 10px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            text-decoration: none;
+        }
+
+        .info-box {
+            background: #f5f7fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            color: #444;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-box li {
+            padding: 5px 0;
+            color: #666;
+        }
+
+        .info-box li::before {
+            content: '• ';
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon"></div>
+        <h1>System Already Initialized</h1>
+        <p>Your Local Auth System has already been configured and is running.</p>
+
+        <div class="links">
+            <div class="link-group">
+                <a href="http://localhost:9000" class="btn" target="_blank">Access Authentik</a>
+            </div>
+            <div class="link-group">
+                <a href="http://localhost:8080" target="_blank">phpLDAPadmin</a>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>Need to make changes?</h3>
+            <ul>
+                <li>Change passwords through the Authentik web interface</li>
+                <li>Use the password reset scripts in the /scripts directory</li>
+                <li>To completely reset, run ./clean.sh from the project root</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>System Services</h3>
+            <ul>
+                <li>Authentik Web UI: <a href="http://localhost:9000" target="_blank">http://localhost:9000</a></li>
+                <li>LDAP Server: ldap://localhost:389</li>
+                <li>RADIUS Server: localhost:1812</li>
+                <li>phpLDAPadmin: <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

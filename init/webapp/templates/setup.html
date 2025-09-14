@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Auth System - Initial Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            color: #444;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-generate {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .password-generate:hover {
+            background: #5a67d8;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .password-strength {
+            margin-top: 5px;
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .strength-weak { background: #f44336; }
+        .strength-medium { background: #ff9800; }
+        .strength-strong { background: #4caf50; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Local Auth System</h1>
+        <p class="subtitle">Let's configure your authentication system securely</p>
+
+        <div class="alert alert-error" id="error-alert"></div>
+        <div class="alert alert-success" id="success-alert"></div>
+
+        <form id="setup-form">
+            <!-- Admin Account Section -->
+            <div class="form-section">
+                <h2 class="section-title">Administrator Account</h2>
+
+                <div class="form-group">
+                    <label for="admin_email">Admin Email Address</label>
+                    <input type="email" id="admin_email" name="admin_email" required
+                           placeholder="admin@example.com">
+                    <div class="help-text">This will be your primary login email</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="admin_password">Admin Password</label>
+                    <div class="password-group">
+                        <input type="password" id="admin_password" name="admin_password" required
+                               placeholder="Enter a strong password" minlength="12">
+                        <button type="button" class="password-generate" onclick="generatePassword('admin_password')">Generate</button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="admin_password_strength"></div>
+                    </div>
+                    <div class="help-text">Minimum 12 characters, mix of letters, numbers, and symbols</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="admin_password_confirm">Confirm Admin Password</label>
+                    <input type="password" id="admin_password_confirm" name="admin_password_confirm" required
+                           placeholder="Re-enter password">
+                </div>
+            </div>
+
+            <!-- Database Section -->
+            <div class="form-section">
+                <h2 class="section-title">Database Configuration</h2>
+
+                <div class="form-group">
+                    <label for="db_password">Database Password</label>
+                    <div class="password-group">
+                        <input type="password" id="db_password" name="db_password" required
+                               placeholder="Enter database password">
+                        <button type="button" class="password-generate" onclick="generatePassword('db_password')">Generate</button>
+                    </div>
+                    <div class="help-text">Password for PostgreSQL database</div>
+                </div>
+            </div>
+
+            <!-- LDAP Section -->
+            <div class="form-section">
+                <h2 class="section-title">LDAP Directory Configuration</h2>
+
+                <div class="form-group">
+                    <label for="ldap_base_dn">LDAP Base DN (Optional)</label>
+                    <input type="text" id="ldap_base_dn" name="ldap_base_dn"
+                           placeholder="dc=local,dc=auth" value="dc=local,dc=auth">
+                    <div class="help-text">Leave default unless you have specific requirements</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ldap_admin_password">LDAP Admin Password</label>
+                    <div class="password-group">
+                        <input type="password" id="ldap_admin_password" name="ldap_admin_password" required
+                               placeholder="Enter LDAP admin password">
+                        <button type="button" class="password-generate" onclick="generatePassword('ldap_admin_password')">Generate</button>
+                    </div>
+                    <div class="help-text">Password for LDAP directory administrator</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ldap_readonly_password">LDAP Read-Only Password</label>
+                    <div class="password-group">
+                        <input type="password" id="ldap_readonly_password" name="ldap_readonly_password" required
+                               placeholder="Enter LDAP read-only password">
+                        <button type="button" class="password-generate" onclick="generatePassword('ldap_readonly_password')">Generate</button>
+                    </div>
+                    <div class="help-text">Password for read-only LDAP access</div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">Initialize System</button>
+        </form>
+    </div>
+
+    <script>
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 12) strength++;
+            if (password.length >= 16) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            return Math.min(strength, 3);
+        }
+
+        // Update password strength indicator
+        document.getElementById('admin_password').addEventListener('input', function(e) {
+            const strength = checkPasswordStrength(e.target.value);
+            const bar = document.getElementById('admin_password_strength');
+
+            bar.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+
+            if (strength === 1) {
+                bar.style.width = '33%';
+                bar.classList.add('strength-weak');
+            } else if (strength === 2) {
+                bar.style.width = '66%';
+                bar.classList.add('strength-medium');
+            } else if (strength >= 3) {
+                bar.style.width = '100%';
+                bar.classList.add('strength-strong');
+            } else {
+                bar.style.width = '0%';
+            }
+        });
+
+        // Generate password function
+        async function generatePassword(fieldId) {
+            try {
+                const response = await fetch('/api/generate-password');
+                const data = await response.json();
+
+                document.getElementById(fieldId).value = data.password;
+                document.getElementById(fieldId).type = 'text';
+
+                // Hide password after 5 seconds
+                setTimeout(() => {
+                    document.getElementById(fieldId).type = 'password';
+                }, 5000);
+
+                // Trigger strength check for admin password
+                if (fieldId === 'admin_password') {
+                    document.getElementById(fieldId).dispatchEvent(new Event('input'));
+                }
+            } catch (error) {
+                showError('Failed to generate password');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const alert = document.getElementById('error-alert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const alert = document.getElementById('success-alert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+        }
+
+        // Form submission
+        document.getElementById('setup-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Initializing... <span class="loading"></span>';
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/initialize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccess(result.message);
+                    // Redirect after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                } else {
+                    showError(result.error);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Initialize System';
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Initialize System';
+            }
+        });
+
+        // Check if already initialized
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/check-status');
+                const data = await response.json();
+
+                if (data.initialized) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Failed to check status');
+            }
+        }
+
+        // Check status on load
+        checkStatus();
+    </script>
+</body>
+</html>

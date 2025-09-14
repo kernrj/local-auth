@@ -1,0 +1,63 @@
+# Default LDAP organizational structure
+# This will be applied if the LDAP directory is empty
+
+# Organization entry
+dn: dc=local,dc=auth
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: Local Auth
+dc: local
+description: Local Authentication System
+
+# Organizational Units
+dn: ou=users,dc=local,dc=auth
+objectClass: organizationalUnit
+ou: users
+description: User accounts
+
+dn: ou=groups,dc=local,dc=auth
+objectClass: organizationalUnit
+ou: groups
+description: User groups
+
+dn: ou=services,dc=local,dc=auth
+objectClass: organizationalUnit
+ou: services
+description: Service accounts
+
+dn: ou=policies,dc=local,dc=auth
+objectClass: organizationalUnit
+ou: policies
+description: Password and access policies
+
+# Default groups
+dn: cn=admins,ou=groups,dc=local,dc=auth
+objectClass: groupOfNames
+cn: admins
+description: System administrators
+member: cn=admin,dc=local,dc=auth
+
+dn: cn=users,ou=groups,dc=local,dc=auth
+objectClass: groupOfNames
+cn: users
+description: Regular users
+member: cn=admin,dc=local,dc=auth
+
+dn: cn=network-admins,ou=groups,dc=local,dc=auth
+objectClass: groupOfNames
+cn: network-admins
+description: Network device administrators
+member: cn=admin,dc=local,dc=auth
+
+dn: cn=vpn-users,ou=groups,dc=local,dc=auth
+objectClass: groupOfNames
+cn: vpn-users
+description: VPN access users
+member: cn=admin,dc=local,dc=auth
+
+dn: cn=radius-users,ou=groups,dc=local,dc=auth
+objectClass: groupOfNames
+cn: radius-users
+description: RADIUS authentication users
+member: cn=admin,dc=local,dc=auth

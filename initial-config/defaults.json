@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "system": {
+    "name": "Local Auth System",
+    "initialized": false
+  },
+  "defaults": {
+    "ldap": {
+      "organisation": "Local Auth",
+      "domain": "local.auth",
+      "base_dn": "dc=local,dc=auth"
+    },
+    "database": {
+      "host": "postgresql",
+      "port": 5432,
+      "name": "authentik",
+      "user": "authentik"
+    },
+    "authentik": {
+      "host": "authentik-server",
+      "port": 9000,
+      "log_level": "info"
+    },
+    "radius": {
+      "auth_port": 1812,
+      "acct_port": 1813,
+      "default_secret": "testing123"
+    }
+  },
+  "security": {
+    "password_min_length": 12,
+    "password_require_complexity": true,
+    "session_timeout_minutes": 60,
+    "max_login_attempts": 5
+  }
+}

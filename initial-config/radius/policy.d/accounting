@@ -1,0 +1,22 @@
+#
+#  Accounting policies
+#
+
+#
+#  Default accounting policy
+#
+accounting {
+	#
+	#  Update the wtmp file
+	#
+	if (Acct-Status-Type == Start) {
+		update reply {
+			&FreeRADIUS-Response-Delay = 1
+		}
+	}
+
+	#
+	#  For now, just accept all accounting packets
+	#
+	ok
+}

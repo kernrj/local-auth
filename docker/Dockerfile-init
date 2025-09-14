@@ -1,0 +1,44 @@
+FROM python:3.11-slim
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    postgresql-client \
+    ldap-utils \
+    jq \
+    netcat-openbsd \
+    build-essential \
+    gcc \
+    libldap2-dev \
+    libsasl2-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages
+RUN pip install \
+    requests \
+    psycopg2-binary \
+    python-ldap \
+    pyyaml \
+    flask \
+    flask-cors \
+    argon2-cffi \
+    python-dotenv \
+    gunicorn
+
+# Copy default configurations
+COPY initial-config/ /defaults/
+RUN chmod +x /defaults/copy-defaults.sh
+
+# Copy initialization scripts and web app
+COPY init/scripts/ /scripts/
+COPY init/webapp/ /webapp/
+RUN chmod +x /scripts/*.sh /scripts/*.py
+
+WORKDIR /scripts
+
+# Set service type for config initialization
+ENV SERVICE_TYPE=init
+
+ENTRYPOINT ["/scripts/init.sh"]

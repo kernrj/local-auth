@@ -1,0 +1,71 @@
+# Inner tunnel virtual server for EAP
+server inner-tunnel {
+    # Authorization
+    authorize {
+        # Check for valid realm
+        suffix
+
+        # Update control attributes
+        update control {
+            &Proxy-To-Realm := LOCAL
+        }
+
+        # EAP authentication
+        eap {
+            ok = return
+        }
+
+        # Files module
+        files
+
+        # Set Auth-Type for inner tunnel
+        update control {
+            Auth-Type := "Authentik"
+        }
+    }
+
+    # Authentication
+    authenticate {
+        # Authentik authentication for inner tunnel
+        Auth-Type Authentik {
+            update control {
+                Exec-Program := "/usr/local/bin/authentik_auth.py"
+            }
+            exec
+        }
+
+        # EAP authentication
+        eap
+    }
+
+    # Session database
+    session {
+        radutmp
+    }
+
+    # Post-auth
+    post-auth {
+        # Log successful authentications
+        update reply {
+            Reply-Message = "Inner tunnel authentication successful"
+        }
+
+        # Copy attributes to outer tunnel
+        update {
+            &outer.session-state: += &reply:
+        }
+    }
+
+    # Post-auth failure
+    Post-Auth-Type REJECT {
+        # Log failed authentications
+        update reply {
+            Reply-Message = "Inner tunnel authentication failed"
+        }
+
+        # Copy error to outer tunnel
+        update outer.session-state {
+            &Module-Failure-Message := &request:Module-Failure-Message
+        }
+    }
+}

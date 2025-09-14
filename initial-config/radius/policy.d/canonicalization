@@ -1,0 +1,17 @@
+#
+#  Canonicalization policies
+#
+
+#
+#  Default canonicalization policy
+#
+canonicalize {
+	#
+	#  Normalize the User-Name attribute
+	#
+	if (&User-Name) {
+		update request {
+			&User-Name := "%{tolower:%{User-Name}}"
+		}
+	}
+}

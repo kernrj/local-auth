@@ -1,0 +1,24 @@
+# REST module configuration for Authentik integration
+rest {
+    # Authentik API endpoint
+    connect_uri = "http://authentik-server:9000"
+
+    # Connection pooling
+    pool {
+        start = 5
+        min = 4
+        max = 10
+        spare = 3
+        uses = 0
+        lifetime = 0
+        idle_timeout = 60
+    }
+
+    # HTTP timeout
+    connect_timeout = 3.0
+    response_timeout = 20
+
+    # TLS options (disabled for internal communication)
+    tls {
+    }
+}

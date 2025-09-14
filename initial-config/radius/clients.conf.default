@@ -1,0 +1,56 @@
+# Default FreeRADIUS client configuration
+# This file will be copied to /etc/freeradius/clients.conf if not exists
+
+# Allow localhost for testing
+client localhost {
+    ipaddr = 127.0.0.1
+    secret = testing123
+    require_message_authenticator = no
+    nas_type = other
+
+    # Uncomment for more descriptive name
+    # shortname = localhost
+}
+
+# IPv6 localhost
+client localhost_ipv6 {
+    ipv6addr = ::1
+    secret = testing123
+    require_message_authenticator = no
+    nas_type = other
+}
+
+# Example: Home router
+# client home_router {
+#     ipaddr = 192.168.1.1
+#     secret = router-secret-change-me
+#     require_message_authenticator = no
+#     nas_type = cisco
+#     shortname = home-router
+# }
+
+# Example: WiFi Access Point
+# client wifi_ap {
+#     ipaddr = 192.168.1.2
+#     secret = wifi-secret-change-me
+#     require_message_authenticator = no
+#     nas_type = other
+#     shortname = wifi-ap
+# }
+
+# Example: VPN Server
+# client vpn_server {
+#     ipaddr = 192.168.1.3
+#     secret = vpn-secret-change-me
+#     require_message_authenticator = no
+#     nas_type = other
+#     shortname = vpn-server
+# }
+
+# Example: Entire subnet
+# client private_network {
+#     ipaddr = 192.168.0.0/16
+#     secret = network-secret-change-me
+#     require_message_authenticator = no
+#     shortname = private-network
+# }

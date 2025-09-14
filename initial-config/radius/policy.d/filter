@@ -1,0 +1,28 @@
+#
+#  Filter policies
+#
+
+#
+#  Default filter policy for incoming requests
+#
+filter_request {
+	#
+	#  Remove dangerous attributes
+	#
+	update request {
+		&Proxy-To-Realm !* ANY
+		&Replicate-To-Realm !* ANY
+	}
+}
+
+#
+#  Default filter policy for outgoing responses
+#
+filter_response {
+	#
+	#  Remove internal attributes
+	#
+	update reply {
+		&FreeRADIUS-Response-Delay !* ANY
+	}
+}

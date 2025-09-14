@@ -1,0 +1,196 @@
+# Local Auth System - Self-contained Docker Compose Configuration
+#
+# IMPORTANT: Change all default passwords before using in production!
+#
+# Environment Variables with Defaults:
+# - PG_USER: PostgreSQL username (default: authentik)
+# - PG_DB: PostgreSQL database name (default: authentik)
+# - PG_PASS: PostgreSQL password (CHANGE THIS!)
+# - AUTHENTIK_SECRET_KEY: Secret key for Authentik (generate a secure 50+ char key)
+# - LDAP_ADMIN_PASSWORD: LDAP admin password (CHANGE THIS!)
+# - LDAP_CONFIG_PASSWORD: LDAP config password (CHANGE THIS!)
+# - LDAP_READONLY_PASSWORD: LDAP readonly user password (CHANGE THIS!)
+# - AUTHENTIK_TOKEN: API token for RADIUS integration (set after Authentik init)
+# - RADIUS_CLIENTS: RADIUS client configuration (format: name:ip:secret)
+
+services:
+  # PostgreSQL Database for Authentik
+  postgresql:
+    image: postgres:15-alpine
+    container_name: authentik-postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-authentik}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/config:/docker-entrypoint-initdb.d:ro
+    environment:
+      POSTGRES_USER: ${PG_USER:-authentik}
+      POSTGRES_DB: ${PG_DB:-authentik}
+      POSTGRES_PASSWORD: ${PG_PASS:-please-change-this-password}
+    networks:
+      - authentik
+
+  # Redis Cache for Authentik
+  redis:
+    image: redis:7-alpine
+    container_name: authentik-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - authentik
+
+  # Authentik Server
+  authentik-server:
+    image: ghcr.io/goauthentik/server:latest
+    container_name: authentik-server
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:-please-change-this-password}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-please-generate-a-secure-50-char-key}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_LOG_LEVEL: ${AUTHENTIK_LOG_LEVEL:-info}
+    volumes:
+      - ./authentik/media:/media
+      - ./authentik/custom-templates:/templates
+      - ./authentik/geoip:/geoip
+      - ./authentik/config:/config:ro
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - authentik
+
+  # Authentik Worker
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    container_name: authentik-worker
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:-please-change-this-password}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-please-generate-a-secure-50-char-key}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_LOG_LEVEL: ${AUTHENTIK_LOG_LEVEL:-info}
+    volumes:
+      - ./authentik/media:/media
+      - ./authentik/custom-templates:/templates
+      - ./authentik/geoip:/geoip
+      - ./authentik/config/authentik:/config:ro
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - authentik
+
+  # OpenLDAP Server
+  openldap:
+    image: osixia/openldap:latest
+    container_name: authentik-openldap
+    restart: unless-stopped
+    environment:
+      LDAP_ORGANISATION: ${LDAP_ORGANISATION:-Local Auth}
+      LDAP_DOMAIN: ${LDAP_DOMAIN:-local.auth}
+      LDAP_BASE_DN: ${LDAP_BASE_DN:-dc=local,dc=auth}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-please-change-ldap-admin-password}
+      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-please-change-ldap-config-password}
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: readonly
+      LDAP_READONLY_USER_PASSWORD: ${LDAP_READONLY_PASSWORD:-please-change-readonly-password}
+      LDAP_TLS: "false"
+    volumes:
+      - ./ldap/data:/var/lib/ldap
+      - ./ldap/config:/etc/ldap/slapd.d
+    ports:
+      - "389:389"
+      - "636:636"
+    networks:
+      - authentik
+
+  # phpLDAPadmin for LDAP management (optional)
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: authentik-phpldapadmin
+    restart: unless-stopped
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: openldap
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8080:80"
+    depends_on:
+      - openldap
+    networks:
+      - authentik
+
+  # FreeRADIUS with Authentik integration
+  freeradius:
+    image: kernrj/authentik-freeradius:latest
+    container_name: authentik-freeradius
+    restart: unless-stopped
+    environment:
+      AUTHENTIK_HOST: ${AUTHENTIK_HOST:-authentik-server}
+      AUTHENTIK_PORT: ${AUTHENTIK_PORT:-9000}
+      AUTHENTIK_TOKEN: ${AUTHENTIK_TOKEN:-please-set-after-init}
+      RADIUS_CLIENTS: ${RADIUS_CLIENTS:-example-client:192.168.1.1:example-secret}
+    volumes:
+      - ./radius/config:/etc/freeradius
+      - ./radius/data:/var/log/freeradius
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    depends_on:
+      - authentik-server
+    networks:
+      - authentik
+
+  # Initialization service
+  init:
+    image: kernrj/authentik-init:latest
+    container_name: authentik-init
+    environment:
+      AUTHENTIK_HOST: authentik-server
+      AUTHENTIK_PORT: 9000
+      PG_HOST: postgresql
+      PG_USER: ${PG_USER:-authentik}
+      PG_DB: ${PG_DB:-authentik}
+      PG_PASS: ${PG_PASS:-please-change-this-password}
+      LDAP_HOST: openldap
+      LDAP_BASE_DN: ${LDAP_BASE_DN:-dc=local,dc=auth}
+      FLASK_ENV: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - authentik
+
+networks:
+  authentik:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  ldap_data:
+  ldap_config:
+  radius_data:
+  init_scripts:

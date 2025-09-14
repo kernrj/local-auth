@@ -1,0 +1,34 @@
+FROM freeradius/freeradius-server:latest
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y \
+    python3 \
+    python3-pip \
+    curl \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages for Authentik integration
+RUN pip3 install requests
+
+# Copy default configurations (requires parent context in docker-compose)
+COPY initial-config/radius/ /defaults/
+COPY initial-config/radius/ /etc/freeradius/
+RUN chmod +x /defaults/copy-defaults.sh
+
+# Make scripts executable
+RUN chmod +x /usr/local/bin/authentik_auth.py /entrypoint.sh
+
+# Modules and sites are already enabled via copied mods-enabled and sites-enabled directories
+# Ensure proper permissions
+RUN chown -R freerad:freerad /etc/freeradius
+
+# Create log directory
+RUN mkdir -p /var/log/freeradius && \
+    chown freerad:freerad /var/log/freeradius
+
+EXPOSE 1812/udp 1813/udp
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["freeradius", "-f", "-l", "stdout"]

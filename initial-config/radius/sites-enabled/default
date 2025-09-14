@@ -1,0 +1,104 @@
+# Default virtual server configuration
+server default {
+    # Listen on authentication port
+    listen {
+        type = auth
+        ipaddr = *
+        port = 1812
+        max_connections = 16
+        lifetime = 0
+        idle_timeout = 30
+    }
+
+    # Listen on accounting port
+    listen {
+        type = acct
+        ipaddr = *
+        port = 1813
+        max_connections = 16
+        lifetime = 0
+        idle_timeout = 30
+    }
+
+    # Authorization
+    authorize {
+        # Preprocess requests
+        preprocess
+
+        # Check for valid realm
+        suffix
+
+        # Read client configuration
+        files
+
+        # EAP authentication
+        eap {
+            ok = return
+        }
+
+        # Set Auth-Type for Authentik
+        update control {
+            Auth-Type := "Authentik"
+        }
+    }
+
+    # Authentication
+    authenticate {
+        # Authentik authentication
+        Auth-Type Authentik {
+            # Call external script
+            update control {
+                Exec-Program := "/usr/local/bin/authentik_auth.py"
+            }
+            exec
+        }
+
+        # EAP authentication
+        eap
+    }
+
+    # Pre-accounting
+    preacct {
+        preprocess
+        suffix
+    }
+
+    # Accounting
+    accounting {
+        # Log to detail file
+        detail
+
+        # Update session database
+        radutmp
+
+        # Return success
+        ok
+    }
+
+    # Session database
+    session {
+        radutmp
+    }
+
+    # Post-auth
+    post-auth {
+        # Log successful authentications
+        update reply {
+            Reply-Message = "Welcome to the network"
+        }
+
+        # Execute any post-auth scripts
+        exec
+
+        # Remove reply attributes that shouldn't be sent
+        remove_reply_message_if_eap
+    }
+
+    # Post-auth failure
+    Post-Auth-Type REJECT {
+        # Log failed authentications
+        update reply {
+            Reply-Message = "Authentication failed"
+        }
+    }
+}

@@ -1,0 +1,22 @@
+# This directory should only contain defaults
+# Never store actual passwords or secrets here
+
+# Ignore any accidentally placed env files
+.env
+.env.*
+
+# Ignore any password files
+*password*
+*secret*
+*.key
+*.pem
+*.crt
+
+# Ignore backups
+*.bak
+*.backup
+
+# Keep the defaults
+!*.default
+!defaults.json
+!README.md
